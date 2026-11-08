@@ -7,10 +7,11 @@ import { listGroups, adjustGroup, isValidGroupKey } from "../server/utils/db";
  * - prepare(sql) → statement（可 bind(...params)，鏈式）
  * - first() 支援 `SELECT ... FROM groups WHERE key = ?`
  * - all() 支援 `SELECT key, count FROM groups`，回 目前內部資料列
- * - batch() 依序執行語句：
+ * - run() 依 guard 語義執行並記錄 SQL/參數：
  *   - UPDATE `count = count + ? ... AND count + ? >= 0`：以 guard 判定，通過才套用，
  *     回 { meta: { changes: 1 } }；不通過（key 不存在或會減成負數）回 changes: 0。
- *   - UPDATE 的 changes=0 時，後續 INSERT 不執行（不記入 executed）。
+ *   - 其餘語句回 { meta: { changes: 1 } }。
+ * - adjustGroup 為順序式兩次 .run()，無 batch；changes=0 時 INSERT 不會被送出。
  */
 function createStubD1(initial?: Array<{ key: GroupKey; count: number }>) {
   const rows: Array<{ key: GroupKey; name: string; count: number }> =
@@ -19,7 +20,6 @@ function createStubD1(initial?: Array<{ key: GroupKey; count: number }>) {
       : GROUPS.map((g) => ({ ...g, count: 0 }));
 
   const executed: Array<{ sql: string; params: unknown[] }> = [];
-  const batches: Array<Array<{ sql: string; params: unknown[] }>> = [];
 
   const ADJUST_SQL = "UPDATE groups SET count = count + ? WHERE key = ? AND count + ? >= 0";
 
@@ -59,7 +59,17 @@ function createStubD1(initial?: Array<{ key: GroupKey; count: number }>) {
       },
       async run() {
         executed.push({ sql, params: statement.params });
-        return {};
+        if (sql === ADJUST_SQL) {
+          const [amount, key] = statement.params;
+          const row = rows.find((r) => r.key === key);
+          if (row && row.count + (amount as number) >= 0) {
+            row.count += amount as number;
+            return { meta: { changes: 1 } };
+          }
+          // guard 未通過（key 不存在 / 會減成負數）→ 0 列被改寫
+          return { meta: { changes: 0 } };
+        }
+        return { meta: { changes: 1 } };
       },
     };
     return statement;
@@ -69,36 +79,9 @@ function createStubD1(initial?: Array<{ key: GroupKey; count: number }>) {
     prepare(sql: string) {
       return makeStatement(sql);
     },
-    async batch(statements: Stub[]) {
-      batches.push(
-        statements.map((s) => ({ sql: s.sql, params: [...s.params] })),
-      );
-
-      const results: Array<{ meta: { changes: number } }> = [];
-      for (const s of statements) {
-        if (s.sql === ADJUST_SQL) {
-          const [amount, key] = s.params;
-          const row = rows.find((r) => r.key === key);
-          if (row && row.count + (amount as number) >= 0) {
-            row.count += amount as number;
-            results.push({ meta: { changes: 1 } });
-            executed.push({ sql: s.sql, params: [...s.params] });
-          } else {
-            // guard 未通過（key 不存在 / 會減成負數）→ 0 列被改寫，且不再執行後續 INSERT
-            results.push({ meta: { changes: 0 } });
-            executed.push({ sql: s.sql, params: [...s.params] });
-            break;
-          }
-        } else if (results[results.length - 1]?.meta.changes === 1) {
-          executed.push({ sql: s.sql, params: [...s.params] });
-          results.push({ meta: { changes: 1 } });
-        }
-      }
-      return results;
-    },
   };
 
-  return { db: db as unknown as D1Database, rows, executed, batches };
+  return { db: db as unknown as D1Database, rows, executed };
 }
 
 describe("groups.ts", () => {
@@ -148,12 +131,11 @@ describe("listGroups", () => {
 });
 
 describe("adjustGroup", () => {
-  it("SQL 為原子相對增量，bind 依序為 (amount, key, amount)", async () => {
-    const { db, batches } = createStubD1([{ key: "hsinchu", count: 5 }]);
+  it("核心寫入為順序式兩次 .run()：guard UPDATE 先行（bind (amount, key, amount)）、INSERT 後置", async () => {
+    const { db, executed } = createStubD1([{ key: "hsinchu", count: 5 }]);
     await adjustGroup(db, "hsinchu", 2);
-    expect(batches).toHaveLength(1);
-    const [statements] = batches;
-    expect(statements).toEqual([
+    // 順序式：UPDATE 先送出（取得 changes 判斷），INSERT 待 UPDATE 通過後才執行
+    expect(executed.slice(0, 2)).toEqual([
       {
         sql: "UPDATE groups SET count = count + ? WHERE key = ? AND count + ? >= 0",
         params: [2, "hsinchu", 2],
@@ -181,18 +163,17 @@ describe("adjustGroup", () => {
     expect(after.find((g) => g.key === "hsinchu")!.count).toBe(7);
   });
 
-  it("guard 生效：count+amount<0 → 回 null、不寫入、不執行 INSERT", async () => {
-    const { db, batches, rows, executed } = createStubD1([{ key: "taipei", count: 1 }]);
+  it("guard 生效（changes=0）：回 null、不寫入，且完全沒有任何 INSERT 發生", async () => {
+    const { db, rows, executed } = createStubD1([{ key: "taipei", count: 1 }]);
     const result = await adjustGroup(db, "taipei", -2);
     expect(result).toBeNull();
-    // guard 於 DB 端判定 → batch 仍會送出（含 UPDATE），但 UPDATE 改寫 0 列
-    expect(batches).toHaveLength(1);
     // count 未被改動
     expect(rows.find((r) => r.key === "taipei")!.count).toBe(1);
-    // changes=0 → INSERT 不執行，也不做事後 SELECT
+    // spec 硬不變量：UPDATE changes=0 時不得寫任何 updates 紀錄 —— INSERT 根本未送出
     expect(executed.map((e) => e.sql)).toEqual([
       "UPDATE groups SET count = count + ? WHERE key = ? AND count + ? >= 0",
     ]);
+    expect(executed.some((e) => e.sql.includes("INSERT INTO updates"))).toBe(false);
   });
 
   it("扣減剛好歸零 → guard 通過（count+amount>=0），成功回 count=0", async () => {
@@ -203,9 +184,8 @@ describe("adjustGroup", () => {
   });
 
   it("未知 key → findGroup 短路回 null（不送任何語句）", async () => {
-    const { db, rows, batches, executed } = createStubD1();
+    const { db, rows, executed } = createStubD1();
     expect(await adjustGroup(db, "kaohsiung", 1)).toBeNull();
-    expect(batches).toHaveLength(0);
     expect(executed).toHaveLength(0);
     expect(rows.every((r) => r.count === 0)).toBe(true);
   });
