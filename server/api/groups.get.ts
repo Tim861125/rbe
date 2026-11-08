@@ -1,9 +1,8 @@
-import type { H3Event } from "h3";
 import type { GroupRow } from "../utils/db";
 import { listGroups } from "../utils/db";
 
 export default defineEventHandler(
-  async (event: H3Event): Promise<{ groups: GroupRow[]; total: number }> => {
+  async (event): Promise<{ groups: GroupRow[]; total: number }> => {
     const env = event.context.cloudflare?.env;
     if (!env?.DB) {
       throw createError({
