@@ -1,0 +1,23 @@
+{
+  "name": "rbe-groups",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "preview": "bun run build && wrangler dev",
+    "deploy": "bun run build && wrangler deploy",
+    "test": "bun test",
+    "cf-typegen": "wrangler types",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "jose": "^6.2.15",
+    "nuxt": "^4.6.4",
+    "roughjs": "^4.6.6"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "wrangler": "^4.158.0"
+  }
+}

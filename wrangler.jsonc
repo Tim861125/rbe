@@ -1,0 +1,9 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "rbe-groups",
+  "compatibility_date": "2025-07-17",
+  "observability": { "enabled": true },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "rbe-db", "database_id": "PLACEHOLDER_TODO_REPLACE" }
+  ]
+}
