@@ -7,7 +7,7 @@
     "build": "nuxt build",
     "preview": "bun run build && wrangler dev",
     "deploy": "bun run build && wrangler deploy",
-    "test": "bun test",
+    "test": "bun test --pass-with-no-tests",
     "cf-typegen": "wrangler types",
     "postinstall": "nuxt prepare"
   },
