@@ -1,10 +1,15 @@
-import { isValidGroupKey, adjustGroup } from "../../../utils/db";
+import { isValidGroupKey, adjustGroup, listGroups } from "../../../utils/db";
 import { parseAmount } from "../../../utils/validation";
+import { buildAnnouncement } from "../../../utils/message";
+import { sendLineAnnouncement } from "../../../utils/line";
 
 /**
  * POST /api/groups/:key/registrations
  * body: { amount }
- * 成功 200: { ok: true, count, announced, lineSent }（announced = amount > 0；lineSent 本 task 恆 false，Task 5 串接 LINE 後改寫）
+ * 成功 200: { ok: true, count, announced, lineSent }
+ * - announced = amount > 0
+ * - lineSent：announced 時組合公告訊息並送 LINE；未設 token/group 時 sendLineAnnouncement
+ *   以 console 印整段訊息並回 false（mock fallback）。未 announce 時不呼叫、恆 false。
  * 驗證失敗 400: { ok: false, error }
  */
 export default defineEventHandler(async (event) => {
@@ -35,10 +40,20 @@ export default defineEventHandler(async (event) => {
     return { ok: false, error: "人數不足，不得減少超過目前人數" };
   }
 
+  const announced = parsed.amount > 0;
+  let lineSent = false;
+  if (announced) {
+    const updatedGroups = await listGroups(env.DB); // 已依 GROUPS 順序重排
+    lineSent = await sendLineAnnouncement(
+      buildAnnouncement(row.name, parsed.amount, updatedGroups),
+      env, // 型式：{ LINE_CHANNEL_ACCESS_TOKEN, LINE_GROUP_ID }（缺任一 → console 印訊息，回 false）
+    );
+  }
+
   return {
     ok: true,
     count: row.count,
-    announced: parsed.amount > 0,
-    lineSent: false, // Task 5 串接 LINE 通知後改寫
+    announced,
+    lineSent,
   };
 });
