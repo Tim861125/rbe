@@ -6,7 +6,6 @@ import {
   type JWK,
   type JWKS,
   type JWTVerifyGetKey,
-  type KeyLike,
 } from "jose";
 
 /**
@@ -71,20 +70,16 @@ export async function requireAccess(
   if (!raw) return false;
 
   const depsSource = deps.getKeySet ?? remoteJwksFor(env.CF_ACCESS_TEAM_DOMAIN ?? "");
-  // 注入邊界可傳 JWTVerifyGetKey／回傳 JWKS 的 async function／靜態 JWKS 物件；
-  // jwtVerify 的 getKey 需回傳驗證金鑰，拿到 JWKS container 時由首把 key 解出金鑰。
-  const getKeySet: JWTVerifyGetKey = async (protectedHeader, token) => {
-    const resolved =
-      typeof depsSource === "function"
-        ? await (depsSource as JWTVerifyGetKey)(protectedHeader, token)
-        : (depsSource as unknown as JWKS);
-    if (typeof resolved === "object" && resolved !== null && "keys" in resolved) {
-      const jwk = (resolved as JWKS).keys[0] as JWK | undefined;
-      if (!jwk) throw new Error("JWKS has no keys");
-      return importJWK({ ...jwk, alg: jwk.alg ?? protectedHeader.alg }, protectedHeader.alg);
-    }
-    return resolved as KeyLike;
-  };
+  // 注入邊界可傳 JWTVerifyGetKey 或靜態 JWKS 物件（測試用）；後者 jwtVerify 不直接支援，
+  // 由首把 key 解出驗證金鑰。
+  const getKeySet: JWTVerifyGetKey =
+    typeof depsSource === "function"
+      ? (depsSource as JWTVerifyGetKey)
+      : async (protectedHeader) => {
+          const jwk = (depsSource as JWKS).keys[0] as JWK | undefined;
+          if (!jwk) throw new Error("JWKS has no keys");
+          return importJWK({ ...jwk, alg: jwk.alg ?? protectedHeader.alg }, protectedHeader.alg);
+        };
 
   try {
     await jwtVerify(raw, getKeySet, {
