@@ -21,7 +21,7 @@ const { groups, total } = await useGroups()
         <p v-else class="text-sm text-muted-foreground">小組名單載入中…</p>
 
         <TotalCard :total="total" />
-        <!-- Task 7 會在此加入 RoughBarChart -->
+        <RoughBarChart :data="groups" />
       </main>
     </div>
   </div>
