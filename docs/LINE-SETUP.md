@@ -4,7 +4,7 @@
 
 ## 額度提醒
 
-**push 訊息免費額度為 200 則/月**。本網站只在「加人」時發送（減人不發），正常使用下不會超；若小組报名量增大，注意 monthly push quota。
+**push 訊息免費額度為 200 則/月**。本網站只在「加人」時發送（減人不發），正常使用下不會超；若報名量增大，留意每月 push 額度。
 
 ## 1. 建立 LINE 官方帳號
 
@@ -37,22 +37,20 @@
 
 ## 5. 取得群組 ID
 
-機器人被拉進群組後，群組裡任何一則**成員發送的訊息**都會觸發 webhook event（即使沒設 webhook URL，也可以改用下面的臨時方式拿到）。最簡單的两种方式：
+機器人被拉進群組後，群組裡任何一則**成員發送的訊息**都會觸發 webhook event，用一個臨時 webhook URL 就能收到群組 ID。兩種方式：
 
 ### 方式 A：臨時用 webhook 接收（推薦，無需程式）
 
 1. 到 <https://webhook.site/> 開一個臨時 URL
 2. 把它填進 channel 的「Webhook URL」並按驗證（驗證會送一個 test 事件）
-3. 請一位群組成員在群組裡发一句話
+3. 請一位群組成員在群組裡發一句話
 4. webhook.site 頁面上會收到一筆 JSON，裡面 `events[0].source.groupId` 就是群組 ID，形如 `Cxxxxxxxxxxxxxxxxxxxxxxxxx...`
 
 ### 方式 B：用訊息記錄
 
 若之前有測試發過訊息，官方帳號管理平台（manager.line.biz）的訊息發送記錄也會顯示目標 ID。通常用方式 A 最快。
 
-（這只是臨時借來抓 ID，之後可以把 webhook URL 清空並關掉 webhook，不影響 push。）
-
-拿到的 ID 記下：
+拿到後可以把 webhook URL 清空並關掉 webhook，不影響 push。記下 ID：
 
 ```
 LINE_GROUP_ID=<C 開頭的群組 ID>
@@ -67,6 +65,8 @@ bunx wrangler secret put LINE_CHANNEL_ACCESS_TOKEN
 bunx wrangler secret put LINE_GROUP_ID
 bun run build && bunx wrangler deploy
 ```
+
+`wrangler secret put` 本身會立即套用到已部署的 Worker；若還沒部署過，這一步同時完成首次部署。
 
 ## 7. 驗證
 
@@ -83,6 +83,6 @@ bun run build && bunx wrangler deploy
 
 3. 沒收到時先 `bunx wrangler tail` 看 log：出現 `[line] push failed: HTTP 4xx` 多半是 token 或 group ID 填錯（401/404）
 
-## 驗證 Secret 是否為 Mock 模式
+## 驗證 Secret 是否生效（Mock 模式排查）
 
-設好後若在 log 只看到訊息被直接印出來（沒有 `[line]` 前綴的錯誤、也沒有收到推播），代表 Worker 端讀不到 secret，檢查第 6 步後是否重新 deploy 過。
+若在 log 只看到訊息被原樣印出來、群組沒收到推播，代表 Worker 讀不到 secret（mock 模式），檢查第 6 步兩個 secret 是否都填過且沒填錯位置。

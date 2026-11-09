@@ -57,7 +57,7 @@ bunx wrangler secret put CF_ACCESS_TEAM_DOMAIN
 bunx wrangler secret put CF_ACCESS_AUD
 ```
 
-TEAM_DOMAIN 填 `https://<team>.cloudflareaccess.com`（程式會自動去掉協定前綴再做 JWT issuer 驗證）。設完重新部署一次：
+TEAM_DOMAIN 填 `https://<team>.cloudflareaccess.com`（程式會自動去掉協定前綴再做 JWT issuer 驗證）。`secret put` 會立即生效；若還沒部署過，補一次：
 
 ```bash
 bun run build && bunx wrangler deploy

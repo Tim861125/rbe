@@ -58,7 +58,7 @@ bunx wrangler secret put LINE_GROUP_ID               # 見 docs/LINE-SETUP.md
 
 ### 4. 建立 Cloudflare Access 應用
 
-照 `docs/CLOUDFLARE-ACCESS-SETUP.md` 建 Access application（Google login + email allowlist），記下 team domain 與应用的 `AUD` tag，回到第 3 步設進 secrets。
+照 `docs/CLOUDFLARE-ACCESS-SETUP.md` 建 Access application（Google login + email allowlist），記下 team domain 與應用的 `AUD` tag，回到第 3 步設進 secrets。
 
 ### 5. 建置並部署
 
@@ -77,11 +77,7 @@ bunx wrangler secret put LINE_CHANNEL_ACCESS_TOKEN
 bunx wrangler secret put LINE_GROUP_ID
 ```
 
-Secret 更新後下一次部署才生效，再跑一次：
-
-```bash
-bun run build && bunx wrangler deploy
-```
+`wrangler secret put` 會立即套用到线上 Worker，不用重新部署；設完在網站上加人測試即可。
 
 ## 文件索引
 
