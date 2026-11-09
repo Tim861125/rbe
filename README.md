@@ -7,6 +7,8 @@ Nuxt 4 SSR + Nitro `cloudflare_module` 部署在 Cloudflare Workers，資料存 
 - Spec：`docs/superpowers/specs/2026-11-08-group-registration-site-design.md`
 - 實作計畫：`docs/superpowers/plans/2026-11-08-group-registration-site.md`
 
+開發流程文件：`.superpowers/sdd/2026-11-08-group-registration-site/`（各 task brief 與實作報告）。
+
 ## 前置需求
 
 - [bun](https://bun.sh)
