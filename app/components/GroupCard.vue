@@ -42,7 +42,7 @@ async function applySubmit(amount: number): Promise<boolean> {
       if (amount > 0)
         toast.success('已更新並公告')
       else
-        toast.info('已更新（不對外公佈）')
+        toast.info('已更新（不對外公告）')
       return true
     }
     toast.error(res.error ?? '更新失敗，請稍後再試')

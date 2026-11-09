@@ -27,9 +27,14 @@ type SubmitFail = { ok: false; error: string };
  */
 export async function useGroups() {
   // 會 await：SSR 等資料回來才 render（卡片/組名會出现在 server html）
+  // SSR 時用 useRequestFetch（nitro 內部 fetch，保留 request context）：
+  // cloudflare_module preset 下綁定只掛在事件上，裸 $fetch 走外部 HTTP 會丟了
+  // event.context.cloudflare.env（見 nuxt/nuxt#30433）；用戶端仍走 $fetch。
+  const requestFetch = useRequestFetch();
+  const fetchGroups = import.meta.server ? requestFetch : $fetch;
   const { data: groups, refresh } = await useAsyncData("groups", async () => {
     try {
-      const res = await $fetch<GroupsResponse>("/api/groups");
+      const res = await fetchGroups<GroupsResponse>("/api/groups");
       return res.groups;
     } catch (err) {
       console.error("[useGroups] fetch /api/groups failed", err);
