@@ -119,4 +119,15 @@ describe("requireAccess", () => {
     );
     expect(ok).toBe(false);
   });
+
+  it("有 AUD 但 TEAM_DOMAIN 為空 → false 且不拋錯、不打網路（fail-closed）", async () => {
+    // 對策：key set 建構失敗（new URL('https:///...') 拋 TypeError）必須吞掉回 false，
+    // middleware 才給 401 而不是 500。未注入 getKeySet 會走 remoteJwksFor；若真去打網路
+    // 在 bun test 下會失敗或逾時，這裡 expect 同步 resolve false 即證明零網路。
+    const ok = await requireAccess(
+      fakeEvent({ [JWT_HEADER]: "some-token" }) as never,
+      { CF_ACCESS_AUD: "aud1" } as never,
+    );
+    expect(ok).toBe(false);
+  });
 });

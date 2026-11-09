@@ -69,19 +69,24 @@ export async function requireAccess(
   const raw = getHeader(event, JWT_HEADER);
   if (!raw) return false;
 
-  const depsSource = deps.getKeySet ?? remoteJwksFor(env.CF_ACCESS_TEAM_DOMAIN ?? "");
-  // 注入邊界可傳 JWTVerifyGetKey 或靜態 JWKS 物件（測試用）；後者 jwtVerify 不直接支援，
-  // 由首把 key 解出驗證金鑰。
-  const getKeySet: JWTVerifyGetKey =
-    typeof depsSource === "function"
-      ? (depsSource as JWTVerifyGetKey)
-      : async (protectedHeader) => {
-          const jwk = (depsSource as JWKS).keys[0] as JWK | undefined;
-          if (!jwk) throw new Error("JWKS has no keys");
-          return importJWK({ ...jwk, alg: jwk.alg ?? protectedHeader.alg }, protectedHeader.alg);
-        };
-
+  // fail-closed：verify 路徑上的任何異常（含 key set 建構，例如 TEAM_DOMAIN 未設或
+  // 格式錯導致 new URL 拋 TypeError）一律回 false → middleware 給 401，不是 500。
   try {
+    if (!env.CF_ACCESS_TEAM_DOMAIN) {
+      console.warn("[auth] CF_ACCESS_AUD is set but CF_ACCESS_TEAM_DOMAIN is empty; /api/* will reject all requests");
+    }
+    const depsSource = deps.getKeySet ?? remoteJwksFor(env.CF_ACCESS_TEAM_DOMAIN ?? "");
+    // 注入邊界可傳 JWTVerifyGetKey 或靜態 JWKS 物件（測試用）；後者 jwtVerify 不直接支援，
+    // 由首把 key 解出驗證金鑰。
+    const getKeySet: JWTVerifyGetKey =
+      typeof depsSource === "function"
+        ? (depsSource as JWTVerifyGetKey)
+        : async (protectedHeader) => {
+            const jwk = (depsSource as JWKS).keys[0] as JWK | undefined;
+            if (!jwk) throw new Error("JWKS has no keys");
+            return importJWK({ ...jwk, alg: jwk.alg ?? protectedHeader.alg }, protectedHeader.alg);
+          };
+
     await jwtVerify(raw, getKeySet, {
       issuer: normalizeIssuer(env.CF_ACCESS_TEAM_DOMAIN ?? ""),
       audience: aud,

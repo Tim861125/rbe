@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { groups, total } = await useGroups()
+const { groups, total, loadError, refresh } = await useGroups()
 </script>
 
 <template>
@@ -18,7 +18,17 @@ const { groups, total } = await useGroups()
         >
           <GroupCard v-for="group in groups" :key="group.key" :group="group" />
         </section>
-        <p v-else class="text-sm text-muted-foreground">小組名單載入中…</p>
+        <div v-if="loadError" class="flex items-center gap-3 text-sm text-muted-foreground">
+          <span>小組名單載入失敗，請檢查網路後重試。</span>
+          <button
+            type="button"
+            class="rounded-md border border-border px-3 py-1 text-foreground hover:bg-muted"
+            @click="refresh()"
+          >
+            重新載入
+          </button>
+        </div>
+        <p v-else-if="!groups.length" class="text-sm text-muted-foreground">小組名單載入中…</p>
 
         <TotalCard :total="total" />
         <RoughBarChart :data="groups" />

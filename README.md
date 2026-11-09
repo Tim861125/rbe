@@ -7,8 +7,6 @@ Nuxt 4 SSR + Nitro `cloudflare_module` 部署在 Cloudflare Workers，資料存 
 - Spec：`docs/superpowers/specs/2026-11-08-group-registration-site-design.md`
 - 實作計畫：`docs/superpowers/plans/2026-11-08-group-registration-site.md`
 
-開發流程文件：`.superpowers/sdd/2026-11-08-group-registration-site/`（各 task brief 與實作報告）。
-
 ## 前置需求
 
 - [bun](https://bun.sh)
@@ -68,7 +66,15 @@ bunx wrangler secret put LINE_GROUP_ID               # 見 docs/LINE-SETUP.md
 bun run build && bunx wrangler deploy
 ```
 
-或用 script：`bun run deploy`。部署後到 `bunx wrangler deployments list` 查部署紀錄，`bunx wrangler tail` 看即時 log（mock 模式下 LINE 訊息就印在這裡）。
+或用 script：`bun run deploy`。部署後先做驗證（gate）：在尚未設 `CF_ACCESS_AUD` 的 dev 模式下直接打 API，
+
+```bash
+curl https://<your-worker-url>/api/groups
+```
+
+必須回 200 JSON 且含四組資料——這也順帶 smoke-check 了建置產物 `.output` 上的 SSR／內部 fetch 路徑。**看到 200 JSON 才算部署成功**；不是 200 就檢查 D1 `database_id`、secrets 與 `bunx wrangler tail` 再重部署。
+
+通過後到 `bunx wrangler deployments list` 查部署紀錄，`bunx wrangler tail` 看即時 log（mock 模式下 LINE 訊息就印在這裡）。
 
 ### 6. 補 LINE（可之後再做）
 
@@ -79,7 +85,7 @@ bunx wrangler secret put LINE_CHANNEL_ACCESS_TOKEN
 bunx wrangler secret put LINE_GROUP_ID
 ```
 
-`wrangler secret put` 會立即套用到线上 Worker，不用重新部署；設完在網站上加人測試即可。
+`wrangler secret put` 會立即套用到線上 Worker，不用重新部署；設完在網站上加人測試即可。
 
 ## 文件索引
 

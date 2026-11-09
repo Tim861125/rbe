@@ -32,13 +32,17 @@ export async function useGroups() {
   // event.context.cloudflare.env（見 nuxt/nuxt#30433）；用戶端仍走 $fetch。
   const requestFetch = useRequestFetch();
   const fetchGroups = import.meta.server ? requestFetch : $fetch;
+  // loadError：抓取失敗旗標，讓頁面分辨「載入中」與「載入失敗」（空陣列兩者同形）。
+  const loadError = ref(false);
   const { data: groups, refresh } = await useAsyncData("groups", async () => {
     try {
       const res = await fetchGroups<GroupsResponse>("/api/groups");
+      loadError.value = false;
       return res.groups;
     } catch (err) {
       console.error("[useGroups] fetch /api/groups failed", err);
-      // API 失敗時回空陣列，讓頁面呈現載入失敗狀態而不是整頁錯誤
+      // API 失敗時回空陣列並記得錯誤狀態，讓頁面呈現載入失敗而不是無限載入中
+      loadError.value = true;
       return [] as Group[];
     }
   }, { default: () => [] as Group[] });
@@ -70,5 +74,5 @@ export async function useGroups() {
     }
   }
 
-  return { groups, total, refresh, submit };
+  return { groups, total, loadError, refresh, submit };
 }

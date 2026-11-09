@@ -25,7 +25,7 @@ CF_ACCESS_TEAM_DOMAIN=https://<team>.cloudflareaccess.com
 2. 找到 **Google**，按 **Configure**
 3. 照畫面提示到 [Google Cloud Console](https://console.cloud.google.com/) 建一個 OAuth 2.0 Client ID（Web application），Authorized redirect URI 填 Dashboard 給你的網址
 4. 把 Google 的 Client ID / Client secret 貼回 Dashboard 並儲存
-5. 在 **Login → Authentication** 確認 method 順序裡有 Google（可把默认的 One-Time Pin 留著當備援，或移除）
+5. 在 **Login → Authentication** 確認 method 順序裡有 Google（可把預設的 One-Time Pin 留著當備援，或移除）
 
 ## 3. 建立 Access Application
 
