@@ -1,0 +1,7 @@
+# Cloudflare Workers secrets（cp .dev.vars.example .dev.vars 後填值；.dev.vars 已 gitignore）
+LINE_CHANNEL_ACCESS_TOKEN=
+LINE_GROUP_ID=
+# 例：https://<team>.cloudflareaccess.com
+CF_ACCESS_TEAM_DOMAIN=
+# Cloudflare Access 應用的 AUD tag；留空 → dev/mock 模式（不驗證 /api）
+CF_ACCESS_AUD=

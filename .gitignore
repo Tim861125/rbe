@@ -3,5 +3,6 @@ node_modules
 .output
 .wrangler
 .dev.vars*
+!.dev.vars.example
 .env
 dist
