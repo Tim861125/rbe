@@ -13,8 +13,8 @@ const PAD_X = 10
 const LABEL_H = 24
 const VALUE_H = 22
 const TOP_H = 8
-const MIN_PLOT_H = 150
-const ASPECT = 0.72 // 高度 = 寬度 × 0.72，375px 手機下也不會太高
+const MIN_PLOT_H = 140
+const ASPECT = 0.45 // 高度 = 寬度 × 0.45，一屏版面下長條圖壓矮
 
 let raf = 0
 let observer: ResizeObserver | undefined
@@ -150,24 +150,19 @@ onBeforeUnmount(() => {
 
 <template>
   <ClientOnly>
-    <Card>
-      <CardHeader>
-        <CardTitle class="font-heading">各組人數分佈</CardTitle>
-      </CardHeader>
+    <Card size="sm">
       <CardContent>
+        <!-- h-[198px] 為防 FCP CLS 的近似高度（375px 手機寬的實際值）；JS 繪製時以 style.height 覆寫 -->
         <canvas
           ref="canvasRef"
           role="img"
           aria-label="各組報名人數長條圖"
-          class="rough-bar-chart__canvas"
+          class="block h-[198px] w-full"
         />
       </CardContent>
     </Card>
     <template #fallback>
-      <Card>
-        <CardHeader>
-          <CardTitle class="font-heading">各組人數分佈</CardTitle>
-        </CardHeader>
+      <Card size="sm">
         <CardContent>
           <ul class="flex flex-col gap-1 text-sm text-muted-foreground">
             <li v-for="item in data" :key="item.name" class="flex justify-between">
@@ -181,11 +176,3 @@ onBeforeUnmount(() => {
   </ClientOnly>
 </template>
 
-<style scoped>
-/* 防 FCP CLS 的近似高度（375px 手機寬的實際值）；JS 繪製時以 style.height 覆寫 */
-.rough-bar-chart__canvas {
-  display: block;
-  width: 100%;
-  height: 326px;
-}
-</style>
