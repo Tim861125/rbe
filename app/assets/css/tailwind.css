@@ -4,10 +4,19 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* 手寫風印刷體（同 lunch-order）：Lite 版約 2.1MB，swap 避免 FOIT */
+@font-face {
+  font-family: 'NaikaiFont';
+  src: url('/fonts/NaikaiFont-Regular-Lite.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
 @theme inline {
-    --font-sans: ui-sans-serif, system-ui, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
-    /* 手繪風標題字：Latin ui-serif + 系統 CJK，不載 webfont */
-    --font-heading: ui-serif, Georgia, "Songti TC", "Noto Serif TC", "PMingLiU", "Microsoft JhengHei", serif;
+    /* 內海字體：同 lunch-order，標題與內文同一手寫字（其 400 字重視覺已夠粗，標題另加 font-bold） */
+    --font-sans: 'NaikaiFont', ui-sans-serif, system-ui, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    --font-heading: 'NaikaiFont', ui-sans-serif, system-ui, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -48,75 +57,79 @@
     --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* 紙感配色取自 lunch-order：紙 #fdfaf3／墨 #2b2b2b／強調橘 #c9421e
+   （accent 已對白字調到 ≥4.5:1；soft/粉彩徽章色為其原值） */
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
+    --background: #fdfaf3;
+    --foreground: #2b2b2b;
+    --card: #fdfaf3;
+    --card-foreground: #2b2b2b;
+    --popover: #fdfaf3;
+    --popover-foreground: #2b2b2b;
+    --primary: #c9421e;
+    --primary-foreground: #fffaf5;
+    --secondary: #f1ecdf;
+    --secondary-foreground: #2b2b2b;
+    --muted: #f1ecdf;
+    --muted-foreground: #6b6658;
+    --accent: #fde2c8;
+    --accent-foreground: #2b2b2b;
+    --destructive: #982f1a;
+    --border: rgb(43 43 43 / 20%);
+    --input: rgb(43 43 43 / 30%);
+    --ring: #c9421e;
+    /* chart-4 是長條圖 fill：淺色用強調橘 hachure */
+    --chart-1: #f6d6ca;
+    --chart-2: #f0c98f;
+    --chart-3: #b78055;
+    --chart-4: #c9421e;
+    --chart-5: #6b6658;
     --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+    --sidebar: #f7f2e6;
+    --sidebar-foreground: #2b2b2b;
+    --sidebar-primary: #c9421e;
+    --sidebar-primary-foreground: #fffaf5;
+    --sidebar-accent: #fde2c8;
+    --sidebar-accent-foreground: #2b2b2b;
+    --sidebar-border: rgb(43 43 43 / 20%);
+    --sidebar-ring: #c9421e;
     color-scheme: light;
 }
 
+/* 暖色深色變體：深暖炭紙 + 淡化橘（不反轉淺色值，依 color-dark-mode 規則用較亮、較低飽和的色調） */
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    /* chart 深淺兩套：淺色由淺到深，深色反過來由深到淺，避免暗底上 fills 看不見 */
-    --chart-1: oklch(0.269 0 0);
-    --chart-2: oklch(0.371 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.556 0 0);
-    --chart-5: oklch(0.87 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+    --background: #221d16;
+    --foreground: #f2eadb;
+    --card: #2a241c;
+    --card-foreground: #f2eadb;
+    --popover: #2a241c;
+    --popover-foreground: #f2eadb;
+    --primary: #e07a52;
+    --primary-foreground: #201310;
+    --secondary: #332c22;
+    --secondary-foreground: #f2eadb;
+    --muted: #332c22;
+    --muted-foreground: #b3a88e;
+    --accent: #4a3524;
+    --accent-foreground: #f7e8d8;
+    --destructive: #e8907a;
+    --border: rgb(242 234 219 / 18%);
+    --input: rgb(242 234 219 / 26%);
+    --ring: #e07a52;
+    /* 深色 chart 由深到淺反序，fills 在暗底看不見的問題同前註 */
+    --chart-1: #4d4436;
+    --chart-2: #7a6248;
+    --chart-3: #a3785a;
+    --chart-4: #e07a52;
+    --chart-5: #f0cfa6;
+    --sidebar: #2a241c;
+    --sidebar-foreground: #f2eadb;
+    --sidebar-primary: #e07a52;
+    --sidebar-primary-foreground: #201310;
+    --sidebar-accent: #4a3524;
+    --sidebar-accent-foreground: #f7e8d8;
+    --sidebar-border: rgb(242 234 219 / 18%);
+    --sidebar-ring: #e07a52;
     color-scheme: dark;
 }
 
@@ -127,6 +140,10 @@
   body {
     @apply bg-background text-foreground;
     @apply font-sans;
+    /* 同 lunch-order：17px / 1.55 行高，手寫字需要多一點行距 */
+    font-size: 17px;
+    line-height: 1.55;
+    font-synthesis: none;
     /* 紙張質感：跟著明暗模式變數走，深淺皆可讀 */
     background-image:
       radial-gradient(
@@ -141,5 +158,49 @@
       );
     background-size: 88px 88px, auto;
     background-attachment: fixed;
+    }
+  /* 同 lunch-order：focus 用 3px 實色強調框，不移除、可改樣式 */
+  :focus-visible {
+    outline: 3px solid var(--ring);
+    outline-offset: 4px;
+    }
+  button { cursor: pointer; }
+  button:disabled { cursor: not-allowed; opacity: .55; }
+
+  /* ── 手繪框（port 自 lunch-order main.css）：SVG 由 RoughFrame.vue 以 rough.js 繪製 ── */
+  .rough-frame { position: relative; isolation: isolate; }
+  .rough-frame--line { height: 1px; }
+  .rough-frame__drawing {
+    position: absolute; inset: 0; z-index: -1;
+    width: 100%; height: 100%;
+    overflow: visible; pointer-events: none;
+    /* rough 邊框繪製完成後才淡入，避免 hydration 後邊框突然出現 */
+    opacity: 0; transition: opacity .2s ease;
+    }
+  .rough-frame.is-drawn > .rough-frame__drawing { opacity: 1; }
+  .rough-frame__content { position: relative; min-width: 0; }
+
+  /* 手繪框內 flex 填滿：讓 Button 等元件把框當 border 用（同 lunch-order .r-button__frame） */
+  .frame-fill { display: flex; }
+  .frame-fill > .rough-frame__content { display: flex; flex: 1; min-width: 0; }
+  /* height:100%（非 utility，優先級高於 cva 的 h-*）：框被 min-h 撐大時按鈕實心填滿，觸控區不縮水 */
+  .frame-fill > .rough-frame__content > * { flex: 1; min-width: 0; height: 100%; }
+  /* 滑過／按壓：整個手繪框（含實色底）輕微淡色，取代 shadcn 的底色 hover */
+  .frame-fill:not(:has(:disabled)):hover > .rough-frame__drawing { opacity: .78; }
+  .frame-fill:has(:active):not(:disabled) > .rough-frame__drawing { opacity: .6; }
+
+  /* ── 轉場與進場動畫：只用 opacity / translate，不改尺寸（RoughFrame 依尺寸繪製）── */
+  :root { --ease-out: cubic-bezier(.22, .8, .36, 1); }
+  .anim-rise { animation: rise-in .26s var(--ease-out) both; }
+  @keyframes rise-in { from { opacity: 0; transform: translateY(6px); } }
+  @keyframes fade-in { from { opacity: 0; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      scroll-behavior: auto !important;
+      animation-duration: .01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .01ms !important;
+      }
     }
 }

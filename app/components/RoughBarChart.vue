@@ -63,11 +63,13 @@ function drawCanvas(progress: number) {
   const slot = (cssWidth - PAD_X * 2) / n
   const barWidth = slot * 0.6
   const maxCount = Math.max(...props.data.map(d => d.count), 1)
+  // 最高 bar 只長到 plotHeight - VALUE_H：數值標籤才不會貼到手繪外框被裁
+  const barScale = plotHeight - VALUE_H
   const font = getComputedStyle(document.body).fontFamily
   // seed 綁定 index：同一組的 bar 形狀在動畫與重繪間穩定
   props.data.forEach((item, i) => {
     const x = PAD_X + slot * i + (slot - barWidth) / 2
-    const targetHeight = item.count / maxCount * plotHeight
+    const targetHeight = item.count / maxCount * barScale
     const height = targetHeight * progress
     const y = plotBottom - height
     if (height > 1) {
@@ -128,6 +130,11 @@ watch(() => props.data, () => {
 
 onMounted(() => {
   animateIn()
+  // NaikaiFont 非同步載入：字体就緒後重繪一次，canvas 標字才用到手寫字
+  document.fonts?.ready.then(() => {
+    if (canvasRef.value)
+      redraw()
+  })
   if (canvasRef.value) {
     // canvas 寬度變動（RWD）時重繪；observer 回呼內改 canvas.height 不會重複觸發
     observer = new ResizeObserver(redraw)

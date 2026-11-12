@@ -8,7 +8,8 @@ defineProps<{ total: number }>()
       <CardTitle class="font-heading">目前總人數</CardTitle>
     </CardHeader>
     <CardContent>
-      <p class="font-heading text-5xl font-semibold tabular-nums sm:text-6xl">{{ total }}</p>
+      <!-- 總數用強調橘（同 lunch-order 總金額的呈現） -->
+      <p class="text-primary font-heading text-5xl font-bold tabular-nums sm:text-6xl">{{ total }}</p>
     </CardContent>
   </Card>
 </template>
